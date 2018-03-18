@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html ng-app="zns_weibo">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" type="text/css" href="style/weibo.css">
+	<script src="js/angular-1.6.8.js"></script>
+	<script>
+		var app = angular.module("zns_weibo", []);
+		app.controller("weibo", function($scope, $http) {
+			$scope.replies=[];
+	        $scope.pages=[];
+	        $scope.curPage=1;
+            
+            //显示留言
+			$http.get("weibo.php", {
+				params: {act: 'get', page: 1}
+			}).success(function (arr) {
+				$scope.replies = arr;
+			}).error(function () {
+				alert('读取失败，请稍后重试');
+			});
+
+			//提交留言
+			$scope.submitMsg = function () {
+				$http.get("weibo.php", {
+					params: {act: 'add', content: $scope.inputText}
+				}).success(function (res) {
+					$scope.replies.unshift({
+						id:       res.id,
+						content:  $scope.inputText,
+						time:     res.time,
+						acc:      0,
+						ref:      0
+					});
+					$scope.inputText = "";
+				}).error(function () {
+					alert("提交失败，请稍后重试");
+				});
+			}
+		})
+	</script>
+</head>
+<body ng-controller="weibo">
+	<div class="nzArea">
+	<!--留言-->
+		<div class="takeComment">
+			<textarea name="textarea" class="takeTextField" id="tijiaoText" ng-model = "inputText"></textarea>
+			<div class="takeSbmComment">
+				<input type="button" class="inputs" value="" ng-click = "submitMsg()"/>
+				<span>(可按 enter 回复)</span>
+			</div>
+		</div>
+		<div class="commentOn">
+			<div class="noContent">暂无留言</div>
+			<div class="messList" ng-show="replies.length==0">
+				<div class="reply" ng-repeat = "reply in replies">
+					<p class="replyContent">{{reply.content}}</p>
+					<p class="operation">
+						<span class="replyTime">{{reply.time*1000|date:"yyyy-MM-dd HH:mm:ss"}}</span>
+						<span class="handle">
+							<a href="javascript:;" class="top">{{reply.acc}}</a>
+							<a href="javascript:;" class="down_icon">{{reply.ref}}</a>
+							<a href="javascript:;" class="cut">删除</a>
+						</span>
+					</p>
+				</div>
+			</div>
+			<div class="page">
+				<a href="javascript:;" class="active">1</a>
+				<a href="javascript:;">2</a>
+				<a href="javascript:;">3</a>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
